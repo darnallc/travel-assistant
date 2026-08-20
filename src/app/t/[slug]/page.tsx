@@ -9,7 +9,7 @@ export const revalidate = 0;
 async function getTrip(slug: string) {
   return prisma.trip.findUnique({
     where: { slug },
-    include: { items: { orderBy: { startAt: "asc" } } },
+    include: { items: { orderBy: [{ sortOrder: "asc" }, { startAt: "asc" }] } },
   });
 }
 

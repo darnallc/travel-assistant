@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/session";
 import { ItemType } from "@/generated/prisma";
 import { ITEM_TYPES } from "@/lib/itemTypes";
+import { dayKey } from "@/lib/formatting";
 
 function timingSafeEqual(a: string, b: string) {
   if (a.length !== b.length) return false;
@@ -197,6 +198,30 @@ export async function updateItem(itemId: string, formData: FormData) {
 
 export async function deleteItem(itemId: string) {
   const item = await prisma.item.delete({ where: { id: itemId }, include: { trip: true } });
+  revalidatePath(`/admin/trips/${item.tripId}`);
+  revalidatePath(`/t/${item.trip.slug}`);
+}
+
+export async function moveItem(itemId: string, direction: "up" | "down") {
+  const item = await prisma.item.findUniqueOrThrow({ where: { id: itemId }, include: { trip: true } });
+  const allItems = await prisma.item.findMany({
+    where: { tripId: item.tripId },
+    orderBy: [{ sortOrder: "asc" }, { startAt: "asc" }],
+  });
+
+  const targetDay = dayKey(item.startAt, item.trip.timezone);
+  const dayItems = allItems.filter((i) => dayKey(i.startAt, item.trip.timezone) === targetDay);
+
+  const index = dayItems.findIndex((i) => i.id === itemId);
+  const swapIndex = direction === "up" ? index - 1 : index + 1;
+  if (swapIndex < 0 || swapIndex >= dayItems.length) return;
+
+  [dayItems[index], dayItems[swapIndex]] = [dayItems[swapIndex], dayItems[index]];
+
+  await prisma.$transaction(
+    dayItems.map((i, idx) => prisma.item.update({ where: { id: i.id }, data: { sortOrder: idx } }))
+  );
+
   revalidatePath(`/admin/trips/${item.tripId}`);
   revalidatePath(`/t/${item.trip.slug}`);
 }

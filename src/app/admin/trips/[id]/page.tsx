@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { addItem, deleteItem, deleteTrip, updateItem, updateTrip } from "@/app/admin/actions";
+import {
+  addItem,
+  deleteItem,
+  deleteTrip,
+  moveItem,
+  updateItem,
+  updateTrip,
+} from "@/app/admin/actions";
 import { ITEM_TYPE_META } from "@/lib/itemTypes";
+import { groupItemsByDay } from "@/lib/formatting";
 import { ItemFields } from "@/components/ItemFields";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
@@ -19,12 +27,13 @@ export default async function TripAdminPage({
   const { id } = await params;
   const trip = await prisma.trip.findUnique({
     where: { id },
-    include: { items: { orderBy: { startAt: "asc" } } },
+    include: { items: { orderBy: [{ sortOrder: "asc" }, { startAt: "asc" }] } },
   });
 
   if (!trip) notFound();
 
   const publicPath = `/t/${trip.slug}`;
+  const days = groupItemsByDay(trip.items, trip.timezone);
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -137,46 +146,77 @@ export default async function TripAdminPage({
         <h2 className="mb-3 text-sm font-medium text-neutral-700">
           Itinerary ({trip.items.length})
         </h2>
-        <ul className="flex flex-col gap-2">
-          {trip.items.map((item) => (
-            <li key={item.id} className="rounded-lg border border-neutral-200 p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-medium">
-                    {ITEM_TYPE_META[item.type].icon} {item.title}
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    {item.startAt.toLocaleString()}
-                    {item.location ? ` · ${item.location}` : ""}
-                  </p>
-                </div>
-                <form action={deleteItem.bind(null, item.id)}>
-                  <ConfirmSubmitButton
-                    confirmMessage={`Delete "${item.title}"?`}
-                    className="text-xs text-red-600 hover:underline"
-                  >
-                    Delete
-                  </ConfirmSubmitButton>
-                </form>
-              </div>
-              <details className="mt-2">
-                <summary className="cursor-pointer text-xs text-neutral-500">Edit</summary>
-                <form action={updateItem.bind(null, item.id)} className="mt-2">
-                  <ItemFields defaultValues={item} />
-                  <button
-                    type="submit"
-                    className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
-                  >
-                    Save changes
-                  </button>
-                </form>
-              </details>
-            </li>
+        <div className="flex flex-col gap-6">
+          {days.map((day) => (
+            <div key={day.key}>
+              <h3 className="mb-2 text-xs font-semibold text-neutral-500">{day.heading}</h3>
+              <ul className="flex flex-col gap-2">
+                {day.items.map((item, index) => (
+                  <li key={item.id} className="rounded-lg border border-neutral-200 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex gap-2">
+                        <div className="flex flex-col gap-0.5 pt-0.5">
+                          <form action={moveItem.bind(null, item.id, "up")}>
+                            <button
+                              type="submit"
+                              disabled={index === 0}
+                              aria-label="Move up"
+                              className="flex h-5 w-5 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-20 disabled:hover:bg-transparent"
+                            >
+                              ▲
+                            </button>
+                          </form>
+                          <form action={moveItem.bind(null, item.id, "down")}>
+                            <button
+                              type="submit"
+                              disabled={index === day.items.length - 1}
+                              aria-label="Move down"
+                              className="flex h-5 w-5 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-20 disabled:hover:bg-transparent"
+                            >
+                              ▼
+                            </button>
+                          </form>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">
+                            {ITEM_TYPE_META[item.type].icon} {item.title}
+                          </p>
+                          <p className="text-xs text-neutral-500">
+                            {item.startAt.toLocaleString()}
+                            {item.location ? ` · ${item.location}` : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <form action={deleteItem.bind(null, item.id)}>
+                        <ConfirmSubmitButton
+                          confirmMessage={`Delete "${item.title}"?`}
+                          className="shrink-0 rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:border-red-400 hover:bg-red-50"
+                        >
+                          Delete
+                        </ConfirmSubmitButton>
+                      </form>
+                    </div>
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-xs text-neutral-500">Edit</summary>
+                      <form action={updateItem.bind(null, item.id)} className="mt-2">
+                        <ItemFields defaultValues={item} />
+                        <button
+                          type="submit"
+                          className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+                        >
+                          Save changes
+                        </button>
+                      </form>
+                    </details>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
           {trip.items.length === 0 ? (
             <p className="text-sm text-neutral-500">No items yet — add one above.</p>
           ) : null}
-        </ul>
+        </div>
       </section>
     </main>
   );
