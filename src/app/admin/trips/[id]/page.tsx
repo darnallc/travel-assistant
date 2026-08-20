@@ -37,14 +37,14 @@ export default async function TripAdminPage({
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <Link href="/admin" className="text-sm text-neutral-500 hover:text-neutral-900">
+      <Link href="/admin" className="text-sm text-neutral-400 hover:text-neutral-100">
         ← All trips
       </Link>
 
       <div className="mt-2 mb-6 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold">{trip.name}</h1>
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-400">
             {trip.startDate.toLocaleDateString()} – {trip.endDate.toLocaleDateString()}
             {trip.destination ? ` · ${trip.destination}` : ""}
           </p>
@@ -52,23 +52,23 @@ export default async function TripAdminPage({
         <form action={deleteTrip.bind(null, trip.id)}>
           <ConfirmSubmitButton
             confirmMessage={`Delete "${trip.name}" and all its items? This cannot be undone.`}
-            className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:border-red-400"
+            className="rounded-md border border-red-900 px-2 py-1 text-xs text-red-400 hover:border-red-700"
           >
             Delete trip
           </ConfirmSubmitButton>
         </form>
       </div>
 
-      <div className="mb-6 flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
+      <div className="mb-6 flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-xs text-neutral-400">
         <span className="truncate">Share link: {publicPath}</span>
         <CopyLinkButton text={publicPath} />
-        <Link href={publicPath} target="_blank" className="text-neutral-500 underline">
+        <Link href={publicPath} target="_blank" className="text-neutral-400 underline">
           Open
         </Link>
       </div>
 
-      <details className="mb-8 rounded-lg border border-neutral-200 p-4">
-        <summary className="cursor-pointer text-sm font-medium text-neutral-700">
+      <details className="mb-8 rounded-lg border border-neutral-800 p-4">
+        <summary className="cursor-pointer text-sm font-medium text-neutral-300">
           Edit trip details
         </summary>
         <form action={updateTrip.bind(null, trip.id)} className="mt-3 grid grid-cols-2 gap-3">
@@ -76,50 +76,50 @@ export default async function TripAdminPage({
             name="name"
             defaultValue={trip.name}
             required
-            className="col-span-2 rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className="field col-span-2"
           />
           <input
             name="destination"
             defaultValue={trip.destination ?? ""}
             placeholder="Destination"
-            className="col-span-2 rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className="field col-span-2"
           />
-          <label className="flex flex-col gap-1 text-xs text-neutral-500">
+          <label className="flex flex-col gap-1 text-xs text-neutral-400">
             Start date
             <input
               type="date"
               name="startDate"
               defaultValue={toDateInputValue(trip.startDate)}
               required
-              className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              className="field"
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-neutral-500">
+          <label className="flex flex-col gap-1 text-xs text-neutral-400">
             End date
             <input
               type="date"
               name="endDate"
               defaultValue={toDateInputValue(trip.endDate)}
               required
-              className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              className="field"
             />
           </label>
           <input
             name="timezone"
             defaultValue={trip.timezone}
             placeholder="Timezone (e.g. America/Chicago)"
-            className="col-span-2 rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className="field col-span-2"
           />
           <textarea
             name="coverNote"
             defaultValue={trip.coverNote ?? ""}
             placeholder="Note shown at the top of the public itinerary (optional)"
             rows={2}
-            className="col-span-2 rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className="field col-span-2"
           />
           <button
             type="submit"
-            className="col-span-2 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+            className="col-span-2 rounded-md bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-300"
           >
             Save trip details
           </button>
@@ -127,15 +127,15 @@ export default async function TripAdminPage({
       </details>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-medium text-neutral-700">Add item</h2>
+        <h2 className="mb-3 text-sm font-medium text-neutral-300">Add item</h2>
         <form
           action={addItem.bind(null, trip.id)}
-          className="rounded-lg border border-neutral-200 p-4"
+          className="rounded-lg border border-neutral-800 p-4"
         >
           <ItemFields />
           <button
             type="submit"
-            className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+            className="mt-3 rounded-md bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-300"
           >
             Add item
           </button>
@@ -143,16 +143,16 @@ export default async function TripAdminPage({
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-medium text-neutral-700">
+        <h2 className="mb-3 text-sm font-medium text-neutral-300">
           Itinerary ({trip.items.length})
         </h2>
         <div className="flex flex-col gap-6">
           {days.map((day) => (
             <div key={day.key}>
-              <h3 className="mb-2 text-xs font-semibold text-neutral-500">{day.heading}</h3>
+              <h3 className="mb-2 text-xs font-semibold text-neutral-400">{day.heading}</h3>
               <ul className="flex flex-col gap-2">
                 {day.items.map((item, index) => (
-                  <li key={item.id} className="rounded-lg border border-neutral-200 p-3">
+                  <li key={item.id} className="rounded-lg border border-neutral-800 p-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex gap-2">
                         <div className="flex flex-col gap-0.5 pt-0.5">
@@ -161,7 +161,7 @@ export default async function TripAdminPage({
                               type="submit"
                               disabled={index === 0}
                               aria-label="Move up"
-                              className="flex h-5 w-5 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-20 disabled:hover:bg-transparent"
+                              className="flex h-5 w-5 items-center justify-center rounded text-neutral-500 hover:bg-neutral-800 hover:text-neutral-200 disabled:opacity-20 disabled:hover:bg-transparent"
                             >
                               ▲
                             </button>
@@ -171,7 +171,7 @@ export default async function TripAdminPage({
                               type="submit"
                               disabled={index === day.items.length - 1}
                               aria-label="Move down"
-                              className="flex h-5 w-5 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-20 disabled:hover:bg-transparent"
+                              className="flex h-5 w-5 items-center justify-center rounded text-neutral-500 hover:bg-neutral-800 hover:text-neutral-200 disabled:opacity-20 disabled:hover:bg-transparent"
                             >
                               ▼
                             </button>
@@ -181,7 +181,7 @@ export default async function TripAdminPage({
                           <p className="text-sm font-medium">
                             {ITEM_TYPE_META[item.type].icon} {item.title}
                           </p>
-                          <p className="text-xs text-neutral-500">
+                          <p className="text-xs text-neutral-400">
                             {item.startAt.toLocaleString()}
                             {item.location ? ` · ${item.location}` : ""}
                           </p>
@@ -190,19 +190,19 @@ export default async function TripAdminPage({
                       <form action={deleteItem.bind(null, item.id)}>
                         <ConfirmSubmitButton
                           confirmMessage={`Delete "${item.title}"?`}
-                          className="shrink-0 rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:border-red-400 hover:bg-red-50"
+                          className="shrink-0 rounded-md border border-red-900 px-2 py-1 text-xs text-red-400 hover:border-red-700 hover:bg-red-950"
                         >
                           Delete
                         </ConfirmSubmitButton>
                       </form>
                     </div>
                     <details className="mt-2">
-                      <summary className="cursor-pointer text-xs text-neutral-500">Edit</summary>
+                      <summary className="cursor-pointer text-xs text-neutral-400">Edit</summary>
                       <form action={updateItem.bind(null, item.id)} className="mt-2">
                         <ItemFields defaultValues={item} />
                         <button
                           type="submit"
-                          className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+                          className="mt-3 rounded-md bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-300"
                         >
                           Save changes
                         </button>
@@ -214,7 +214,7 @@ export default async function TripAdminPage({
             </div>
           ))}
           {trip.items.length === 0 ? (
-            <p className="text-sm text-neutral-500">No items yet — add one above.</p>
+            <p className="text-sm text-neutral-400">No items yet — add one above.</p>
           ) : null}
         </div>
       </section>
